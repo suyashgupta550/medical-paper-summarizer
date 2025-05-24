@@ -1,10 +1,16 @@
 import time
-from openai.error import RateLimitError
 import os
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.summarize import load_summarize_chain
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+# Try to import RateLimitError from openai, define dummy if not available
+try:
+    from openai.error import RateLimitError
+except ImportError:
+    class RateLimitError(Exception):
+        pass
 
 def load_pdf(pdf_path):
     loader = PyPDFLoader(pdf_path)
@@ -14,7 +20,7 @@ def load_pdf(pdf_path):
 
 def generate_summary(docs, api_key):
     os.environ["OPENAI_API_KEY"] = api_key
-    llm = ChatOpenAI(temperature=0.3, model_name="gpt-3.5-turbo")  # safer model
+    llm = ChatOpenAI(temperature=0.3, model_name="gpt-3.5-turbo")
     chain = load_summarize_chain(llm, chain_type="map_reduce")
     return chain.run(docs)
 
