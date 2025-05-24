@@ -1,5 +1,5 @@
 import streamlit as st
-from utils import load_pdf, generate_summary, structured_summary
+from utils import load_pdf, safe_generate_summary, structured_summary
 import tempfile
 
 st.set_page_config(page_title="Medical Paper Summarizer", layout="wide")
@@ -15,7 +15,7 @@ if uploaded_file and api_key:
 
     with st.spinner("Processing..."):
         docs = load_pdf(tmp_path)
-        raw_summary = generate_summary(docs, api_key)
+        raw_summary = safe_generate_summary(docs, api_key)
         result = structured_summary(raw_summary, api_key)
 
     st.subheader("📋 Extracted Summary")
