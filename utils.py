@@ -12,7 +12,7 @@ def load_pdf(pdf_path):
 
 def generate_summary(docs, api_key):
     os.environ["OPENAI_API_KEY"] = api_key
-    llm = ChatOpenAI(temperature=0.3, model_name="gpt-4")
+    llm = ChatOpenAI(temperature=0.3, model_name="gpt-3.5-turbo")
     chain = load_summarize_chain(llm, chain_type="map_reduce")
     return chain.run(docs)
 
