@@ -15,7 +15,7 @@ if uploaded_file and api_key:
 
     with st.spinner("Processing..."):
         docs = load_pdf(tmp_path)
-        raw_summary = safe_generate_summary(docs, api_key)
+       raw_summary = safe_generate_summary(docs, api_key)
         result = structured_summary(raw_summary, api_key)
 
     st.subheader("📋 Extracted Summary")
