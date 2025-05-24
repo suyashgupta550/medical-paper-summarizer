@@ -1,5 +1,4 @@
 streamlit
-openai
 langchain
+openai
 pypdf
-tiktoken
