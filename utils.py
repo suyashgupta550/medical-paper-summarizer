@@ -1,38 +1,35 @@
 import time
 import os
+from openai.error import RateLimitError
 from langchain.chat_models import ChatOpenAI
 from langchain.chains.summarize import load_summarize_chain
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-
-# Try to import RateLimitError from openai, define dummy if not available
-try:
-    from openai.error import RateLimitError
-except ImportError:
-    class RateLimitError(Exception):
-        pass
+import streamlit as st
 
 def load_pdf(pdf_path):
     loader = PyPDFLoader(pdf_path)
     documents = loader.load()
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    # Increase chunk size to reduce number of requests
+    splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
     return splitter.split_documents(documents)
 
 def generate_summary(docs, api_key):
     os.environ["OPENAI_API_KEY"] = api_key
-    llm = ChatOpenAI(temperature=0.3, model_name="gpt-3.5-turbo")
+    llm = ChatOpenAI(temperature=0.3, model_name="gpt-3.5-turbo")  # safer model
     chain = load_summarize_chain(llm, chain_type="map_reduce")
     return chain.run(docs)
 
-def safe_generate_summary(docs, api_key, retries=3, delay=10):
+def safe_generate_summary(docs, api_key, retries=5, delay=20):
     for attempt in range(retries):
         try:
             return generate_summary(docs, api_key)
         except RateLimitError:
             if attempt < retries - 1:
-                print(f"Rate limit hit, retrying in {delay} seconds...")
+                st.warning(f"Rate limit hit, retrying in {delay} seconds... (attempt {attempt + 1}/{retries})")
                 time.sleep(delay)
             else:
+                st.error("Exceeded rate limit retries. Please try again later.")
                 raise
 
 def structured_summary(summary, api_key):
@@ -49,9 +46,8 @@ Given the following summary, extract:
 5. Simplified explanation for non-medical readers.
 
 Summary:
-\"\"\"
+\"\"\" 
 {summary}
 \"\"\"
 """
-
     return llm.predict(prompt)
